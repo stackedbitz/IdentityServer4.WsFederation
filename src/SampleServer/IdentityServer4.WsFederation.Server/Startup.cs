@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.Models;
-using IdentityServer4.Quickstart.UI;
+using IdentityServerHost.Quickstart.UI;
 using IdentityServer4.WsFederation.Server.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
@@ -19,16 +20,17 @@ namespace IdentityServer4.WsFederation.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddRouting();
             services.AddMvc();
 
             var certificate = new X509Certificate2("IdentityServer4.WsFederation.Testing.pfx", "pw");
-            var signingCredentials = new SigningCredentials(new X509SecurityKey(certificate), SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest);
+            //var signingCredentials = new SigningCredentials(new X509SecurityKey(certificate)/*, SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest*/);
 
             var builder = services.AddIdentityServer(options => 
             {
                 options.IssuerUri = "urn:idsrv4:wsfed:server:sample";
             })
-            .AddSigningCredential(signingCredentials)
+            .AddSigningCredential(certificate)
             .AddTestUsers(TestUsers.Users)
             .AddInMemoryClients(Clients.TestClients)
             .AddInMemoryApiResources(new List<ApiResource>())
@@ -36,7 +38,7 @@ namespace IdentityServer4.WsFederation.Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -44,13 +46,11 @@ namespace IdentityServer4.WsFederation.Server
             }
 
             app.UseStaticFiles();
-
             app.UseIdentityServer();
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(options =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                options.MapDefaultControllerRoute();
             });
         }
     }

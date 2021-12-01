@@ -50,7 +50,8 @@ namespace IdentityServer4.WsFederation
             await _userSession.AddClientIdAsync(Response.Request.Client.ClientId);
             var formPost = Response.ResponseMessage.BuildFormPost();
             context.Response.ContentType = "text/html";
-            await context.Response.WriteHtmlAsync(formPost);
+            //await context.Response.WriteHtmlAsync(formPost);
+            await context.Response.WriteAsync(formPost);
         }
 
         //Process the error by redirecting to the error page
@@ -68,7 +69,8 @@ namespace IdentityServer4.WsFederation
 
             var errorUrl = _options.UserInteraction.ErrorUrl;
             var url = $"{errorUrl}?{_options.UserInteraction.ErrorIdParameter}={id}";
-            context.Response.RedirectToAbsoluteUrl(url);
+            //context.Response.RedirectToAbsoluteUrl(url);
+            context.Response.Redirect(url);
         }
     }
 }

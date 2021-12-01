@@ -89,7 +89,7 @@ namespace IdentityServer4.WsFederation.Tests.Endpoints
             await result.ExecuteAsync(httpContext);
 
             //Assert that the user was redirected to the login page
-            httpContext.Response.Received().RedirectToAbsoluteUrl("http://Login/Url?testParam=%2Fwsfederation");
+            httpContext.Response.Received().Redirect("http://Login/Url?testParam=%2Fwsfederation");
         }
 
         [TestMethod]
@@ -141,7 +141,7 @@ namespace IdentityServer4.WsFederation.Tests.Endpoints
             Assert.IsNotNull(result);
             await result.ExecuteAsync(httpContext);
 
-            httpContext.Response.Received().RedirectToAbsoluteUrl("http://Login/Url?testParam=%2Fwsfederation");
+            httpContext.Response.Received().Redirect("http://Login/Url?testParam=%2Fwsfederation");
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace IdentityServer4.WsFederation.Tests.Endpoints
             Assert.IsNotNull(result);
             await result.ExecuteAsync(httpContext);
 
-            httpContext.Response.Received().RedirectToAbsoluteUrl("http://Login/Url?testParam=%2Fwsfederation");
+            httpContext.Response.Received().Redirect("http://Login/Url?testParam=%2Fwsfederation");
         }
 
         [TestMethod]

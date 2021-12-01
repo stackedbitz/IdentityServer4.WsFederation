@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace IdentityServer4.WsFederation.Client
 {
@@ -23,6 +24,7 @@ namespace IdentityServer4.WsFederation.Client
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddRouting();
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -31,18 +33,19 @@ namespace IdentityServer4.WsFederation.Client
             .AddWsFederation(options =>
             {
                 options.Wtrealm = "urn:idsrv4:wsfed:sample";
-                options.MetadataAddress = "http://localhost:51215/wsfederation/metadata";
+                //options.MetadataAddress = "https://localhost:44328/wsfederation/metadata";
+                options.MetadataAddress = "https://localhost:44310/wsfederation/metadata";
                 //options.Wtrealm = "urn:aspnetcorerp";
                 //options.MetadataAddress = "http://localhost:5000/wsfederation";
                 options.RequireHttpsMetadata = false;
-                options.Wreply = "http://localhost:51214/signin-wsfed";
-                options.SignOutWreply = "http://localhost:51214/";
+                options.Wreply = "https://localhost:44328/signin-wsfed";
+                options.SignOutWreply = "https://localhost:44328/";
             })
             .AddCookie();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -53,13 +56,13 @@ namespace IdentityServer4.WsFederation.Client
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseRouting();
             app.UseStaticFiles();
             app.UseAuthentication();
-            app.UseMvc(routes =>
+            app.UseAuthorization();
+            app.UseEndpoints(options =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                options.MapDefaultControllerRoute();
             });
         }
     }
