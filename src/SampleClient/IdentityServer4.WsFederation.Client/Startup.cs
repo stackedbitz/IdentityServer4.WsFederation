@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace IdentityServer4.WsFederation.Client
 {
@@ -33,10 +34,7 @@ namespace IdentityServer4.WsFederation.Client
             .AddWsFederation(options =>
             {
                 options.Wtrealm = "urn:idsrv4:wsfed:sample";
-                //options.MetadataAddress = "https://localhost:44328/wsfederation/metadata";
-                options.MetadataAddress = "https://localhost:44310/wsfederation/metadata";
-                //options.Wtrealm = "urn:aspnetcorerp";
-                //options.MetadataAddress = "http://localhost:5000/wsfederation";
+                options.MetadataAddress = Configuration["WsFederation:IdpMetadataAddress"];
                 options.RequireHttpsMetadata = false;
                 options.Wreply = "https://localhost:44328/signin-wsfed";
                 options.SignOutWreply = "https://localhost:44328/";

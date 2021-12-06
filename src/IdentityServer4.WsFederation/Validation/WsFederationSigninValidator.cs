@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.Stores;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.WsFederation;
 using System.Linq;
@@ -14,11 +15,14 @@ namespace IdentityServer4.WsFederation.Validation
     {
         private readonly IClientStore _clients;
         private readonly ILogger _logger;
+        private readonly WsFederationOptions _wsFederationOptions;
 
-        public WsFederationSigninValidator(ILogger<WsFederationSigninValidator> logger, IClientStore clients)
+        public WsFederationSigninValidator(ILogger<WsFederationSigninValidator> logger, IClientStore clients,
+            WsFederationOptions wsFederationOptions)
         {
             _logger = logger;
             _clients = clients;
+            _wsFederationOptions = wsFederationOptions;
         }
 
         public async Task<WsFederationSigninValidationResult> ValidateAsync(WsFederationMessage message, ClaimsPrincipal user)
@@ -54,6 +58,12 @@ namespace IdentityServer4.WsFederation.Validation
             {
                 _logger.LogError("There is no client configured that matches the wtrealm parameter of the incoming request.", validatedRequest);
                 return new WsFederationSigninValidationResult(validatedRequest, "No Client.", "There is no client configured that matches the wtrealm parameter of the incoming request.");
+            }
+
+            if (_wsFederationOptions.ValidateClientScopes && client.AllowedScopes?.Any() == false)
+            {
+                _logger.LogInformation("The client matching the wtrealm parameter of the incoming request is missing allowed scopes.", validatedRequest);
+                return new WsFederationSigninValidationResult(validatedRequest, "Client missing allowed scopes.", "The client matching the wtrealm parameter of the incoming request is missing allowed scopes.");
             }
 
             if (string.IsNullOrEmpty(message.Wreply))

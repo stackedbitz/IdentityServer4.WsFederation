@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 using IdentityServer4.WsFederation.Client.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.WsFederation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IdentityServer4.WsFederation.Client.Controllers
 {
@@ -18,10 +21,17 @@ namespace IdentityServer4.WsFederation.Client.Controllers
         }
 
         [Authorize]
-        public IActionResult About()
+        public async Task<IActionResult> About()
         {
-            ViewData["Message"] = "Your application description page.";
-            return View();
+            var localAddresses = new string[] { "127.0.0.1", "::1", HttpContext.Connection?.LocalIpAddress?.ToString() };
+            if (!localAddresses.Contains(HttpContext.Connection?.RemoteIpAddress?.ToString()))
+            {
+                return NotFound();
+            }
+
+            var model = new DiagnosticsViewModel(await HttpContext.AuthenticateAsync());
+
+            return View(model);
         }
 
         public IActionResult Logout()

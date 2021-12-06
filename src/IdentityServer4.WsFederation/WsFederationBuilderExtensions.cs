@@ -3,13 +3,20 @@
 
 using IdentityServer4.WsFederation;
 using IdentityServer4.WsFederation.Validation;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class WsFederationBuilderExtensions
     {
-        public static IIdentityServerBuilder AddWsFederation(this IIdentityServerBuilder builder)
+        public static IIdentityServerBuilder AddWsFederation(this IIdentityServerBuilder builder, Action<WsFederationOptions> configure = null)
         {
+            var options = new WsFederationOptions();
+
+            configure?.Invoke(options);
+
+            builder.Services.AddSingleton(options);
+
             builder.Services.AddTransient<WsFederationMetadataGenerator>();
             builder.Services.AddTransient<IWsFederationSigninValidator, WsFederationSigninValidator>();
             builder.Services.AddTransient<IWsFederationSignoutValidator, WsFederationSignoutValidator>();

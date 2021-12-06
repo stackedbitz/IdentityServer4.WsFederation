@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Nathan Ellenfield. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using IdentityModel;
 using IdentityServer4.Configuration;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
+using IdentityServer4.Stores;
 using IdentityServer4.WsFederation.Validation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.WsFederation;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +21,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
+using static Microsoft.IdentityModel.Tokens.Saml.SamlConstants;
 
 namespace IdentityServer4.WsFederation.Tests.ResponseGenerator
 {
@@ -37,13 +41,16 @@ namespace IdentityServer4.WsFederation.Tests.ResponseGenerator
             var signingCredentials = new SigningCredentials(new X509SecurityKey(certificate), SecurityAlgorithms.RsaSha256Signature, SecurityAlgorithms.Sha256Digest);
             var keys = Substitute.For<IKeyMaterialService>();
             keys.GetSigningCredentialsAsync().Returns(signingCredentials);
+            var resources = Substitute.For<IResourceStore>();
+            var profile = Substitute.For<IProfileService>();
+            var wsFederationOptions = new WsFederationOptions();
 
             var options = new IdentityServerOptions
             {
                 IssuerUri = "http://example.com/testissuer"
             };
 
-            return new WsFederationSigninResponseGenerator(logger, clock, options, keys);
+            return new WsFederationSigninResponseGenerator(logger, clock, options, keys, resources, profile, wsFederationOptions);
         }
 
         private ValidatedWsFederationSigninRequest GetDefaultValidatedRequest()
@@ -52,6 +59,13 @@ namespace IdentityServer4.WsFederation.Tests.ResponseGenerator
             {
                 IdentityTokenLifetime = 300
             };
+            var subject = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new List<Claim> { 
+                        new Claim(ClaimTypes.Name, "bob"),
+                        new Claim(JwtClaimTypes.AuthenticationMethod, AuthenticationMethods.UnspecifiedString),
+                    }));
+
             var request = new ValidatedWsFederationSigninRequest
             {
                 Client = client,
@@ -62,7 +76,7 @@ namespace IdentityServer4.WsFederation.Tests.ResponseGenerator
                     Wreply = "http://example.com/mywreply",
                     Wtrealm = "http://example.com/myrealm"
                 },
-                Subject = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim> { new Claim(ClaimTypes.Name, "bob") }))
+                Subject = subject
             };
             request.SetClient(client);
             return request;

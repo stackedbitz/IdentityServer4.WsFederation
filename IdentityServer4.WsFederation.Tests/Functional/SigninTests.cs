@@ -16,6 +16,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static Microsoft.IdentityModel.Tokens.Saml.SamlConstants;
 
 namespace IdentityServer4.WsFederation.Tests.Functional
 {
@@ -34,6 +35,7 @@ namespace IdentityServer4.WsFederation.Tests.Functional
             identity.AddClaim(new Claim(ClaimTypes.Name, "TestUser"));
             identity.AddClaim(new Claim(JwtClaimTypes.Subject, "subject"));
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "TestUserId"));
+            identity.AddClaim(new Claim(JwtClaimTypes.AuthenticationMethod, AuthenticationMethods.UnspecifiedString));
             _fakePrincipal = new ClaimsPrincipal(identity);
         }
 
